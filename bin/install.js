@@ -1673,6 +1673,7 @@ function convertClaudeToQoderMarkdown(content) {
   converted = converted.replace(/\*\*Known Claude Code bug \(classifyHandoffIfNeeded\):\*\*[^\n]*\n/g, '');
   converted = converted.replace(/- \*\*classifyHandoffIfNeeded false failure:\*\*[^\n]*\n/g, '');
   converted = converted.replace(/\bClaude Code\b/g, 'Qoder');
+  converted = neutralizeAgentReferences(converted, 'AGENTS.md');
   return converted;
 }
 
