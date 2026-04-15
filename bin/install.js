@@ -1667,6 +1667,8 @@ function convertClaudeToQoderMarkdown(content) {
   converted = converted.replace(/\bCLAUDE\.md\b/g, 'AGENTS.md');
   converted = converted.replace(/\.claude\/skills\//g, '.qoder/skills/');
   converted = converted.replace(/\.\/\.claude\//g, './.qoder/');
+  converted = converted.replace(/\$HOME\/\.claude\//g, '$HOME/.qoder/');
+  converted = converted.replace(/~\/\.claude\//g, '~/.qoder/');
   converted = converted.replace(/\.claude\//g, '.qoder/');
   converted = converted.replace(/\*\*Known Claude Code bug \(classifyHandoffIfNeeded\):\*\*[^\n]*\n/g, '');
   converted = converted.replace(/- \*\*classifyHandoffIfNeeded false failure:\*\*[^\n]*\n/g, '');
