@@ -73,6 +73,7 @@ const hasTrae = args.includes('--trae');
 const hasQwen = args.includes('--qwen');
 const hasCodebuddy = args.includes('--codebuddy');
 const hasCline = args.includes('--cline');
+const hasQoder = args.includes('--qoder');
 const hasBoth = args.includes('--both'); // Legacy flag, keeps working
 const hasAll = args.includes('--all');
 const hasUninstall = args.includes('--uninstall') || args.includes('-u');
@@ -80,7 +81,7 @@ const hasUninstall = args.includes('--uninstall') || args.includes('-u');
 // Runtime selection - can be set by flags or interactive prompt
 let selectedRuntimes = [];
 if (hasAll) {
-  selectedRuntimes = ['claude', 'kilo', 'opencode', 'gemini', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf', 'augment', 'trae', 'qwen', 'codebuddy', 'cline'];
+  selectedRuntimes = ['claude', 'kilo', 'opencode', 'gemini', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf', 'augment', 'trae', 'qwen', 'codebuddy', 'cline', 'qoder'];
 } else if (hasBoth) {
   selectedRuntimes = ['claude', 'opencode'];
 } else {
@@ -98,6 +99,7 @@ if (hasAll) {
   if (hasQwen) selectedRuntimes.push('qwen');
   if (hasCodebuddy) selectedRuntimes.push('codebuddy');
   if (hasCline) selectedRuntimes.push('cline');
+  if (hasQoder) selectedRuntimes.push('qoder');
 }
 
 // WSL + Windows Node.js detection
@@ -149,6 +151,7 @@ function getDirName(runtime) {
   if (runtime === 'qwen') return '.qwen';
   if (runtime === 'codebuddy') return '.codebuddy';
   if (runtime === 'cline') return '.cline';
+  if (runtime === 'qoder') return '.qoder';
   return '.claude';
 }
 
@@ -184,6 +187,7 @@ function getConfigDirFromHome(runtime, isGlobal) {
   if (runtime === 'qwen') return "'.qwen'";
   if (runtime === 'codebuddy') return "'.codebuddy'";
   if (runtime === 'cline') return "'.cline'";
+  if (runtime === 'qoder') return "'.qoder'";
   return "'.claude'";
 }
 
@@ -378,6 +382,17 @@ function getGlobalDir(runtime, explicitDir = null) {
     return path.join(os.homedir(), '.cline');
   }
 
+  if (runtime === 'qoder') {
+    // Qoder: --config-dir > QODER_CONFIG_DIR > ~/.qoder
+    if (explicitDir) {
+      return expandTilde(explicitDir);
+    }
+    if (process.env.QODER_CONFIG_DIR) {
+      return expandTilde(process.env.QODER_CONFIG_DIR);
+    }
+    return path.join(os.homedir(), '.qoder');
+  }
+
   // Claude Code: --config-dir > CLAUDE_CONFIG_DIR > ~/.claude
   if (explicitDir) {
     return expandTilde(explicitDir);
@@ -398,7 +413,7 @@ const banner = '\n' +
   '\n' +
   '  Get Shit Done ' + dim + 'v' + pkg.version + reset + '\n' +
   '  A meta-prompting, context engineering and spec-driven\n' +
-  '  development system for Claude Code, OpenCode, Gemini, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Cline and CodeBuddy by TÂCHES.\n';
+  '  development system for Claude Code, OpenCode, Gemini, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Cline, CodeBuddy and Qoder by TÂCHES.\n';
 
 // Parse --config-dir argument
 function parseConfigDirArg() {
@@ -436,7 +451,7 @@ if (hasUninstall) {
 
 // Show help if requested
 if (hasHelp) {
-  console.log(`  ${yellow}Usage:${reset} npx get-shit-done-cc [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--kilo${reset}                    Install for Kilo only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--copilot${reset}                 Install for Copilot only\n    ${cyan}--antigravity${reset}             Install for Antigravity only\n    ${cyan}--cursor${reset}                  Install for Cursor only\n    ${cyan}--windsurf${reset}                Install for Windsurf only\n    ${cyan}--augment${reset}                 Install for Augment only\n    ${cyan}--trae${reset}                    Install for Trae only\n    ${cyan}--qwen${reset}                    Install for Qwen Code only\n    ${cyan}--cline${reset}                   Install for Cline only\n    ${cyan}--codebuddy${reset}              Install for CodeBuddy only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx get-shit-done-cc\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx get-shit-done-cc --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx get-shit-done-cc --gemini --global\n\n    ${dim}# Install for Kilo globally${reset}\n    npx get-shit-done-cc --kilo --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx get-shit-done-cc --codex --global\n\n    ${dim}# Install for Copilot globally${reset}\n    npx get-shit-done-cc --copilot --global\n\n    ${dim}# Install for Copilot locally${reset}\n    npx get-shit-done-cc --copilot --local\n\n    ${dim}# Install for Antigravity globally${reset}\n    npx get-shit-done-cc --antigravity --global\n\n    ${dim}# Install for Antigravity locally${reset}\n    npx get-shit-done-cc --antigravity --local\n\n    ${dim}# Install for Cursor globally${reset}\n    npx get-shit-done-cc --cursor --global\n\n    ${dim}# Install for Cursor locally${reset}\n    npx get-shit-done-cc --cursor --local\n\n    ${dim}# Install for Windsurf globally${reset}\n    npx get-shit-done-cc --windsurf --global\n\n    ${dim}# Install for Windsurf locally${reset}\n    npx get-shit-done-cc --windsurf --local\n\n    ${dim}# Install for Augment globally${reset}\n    npx get-shit-done-cc --augment --global\n\n    ${dim}# Install for Augment locally${reset}\n    npx get-shit-done-cc --augment --local\n\n    ${dim}# Install for Trae globally${reset}\n    npx get-shit-done-cc --trae --global\n\n    ${dim}# Install for Trae locally${reset}\n    npx get-shit-done-cc --trae --local\n\n    ${dim}# Install for Cline locally${reset}\n    npx get-shit-done-cc --cline --local\n\n    ${dim}# Install for CodeBuddy globally${reset}\n    npx get-shit-done-cc --codebuddy --global\n\n    ${dim}# Install for CodeBuddy locally${reset}\n    npx get-shit-done-cc --codebuddy --local\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx get-shit-done-cc --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx get-shit-done-cc --kilo --global --config-dir ~/.kilo-work\n\n    ${dim}# Install to current project only${reset}\n    npx get-shit-done-cc --claude --local\n\n    ${dim}# Uninstall GSD from Cursor globally${reset}\n    npx get-shit-done-cc --cursor --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / OPENCODE_CONFIG_DIR / GEMINI_CONFIG_DIR / KILO_CONFIG_DIR / CODEX_HOME / COPILOT_CONFIG_DIR / ANTIGRAVITY_CONFIG_DIR / CURSOR_CONFIG_DIR / WINDSURF_CONFIG_DIR / AUGMENT_CONFIG_DIR / TRAE_CONFIG_DIR / QWEN_CONFIG_DIR / CLINE_CONFIG_DIR / CODEBUDDY_CONFIG_DIR environment variables.\n`);
+  console.log(`  ${yellow}Usage:${reset} npx get-shit-done-cc [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--kilo${reset}                    Install for Kilo only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--copilot${reset}                 Install for Copilot only\n    ${cyan}--antigravity${reset}             Install for Antigravity only\n    ${cyan}--cursor${reset}                  Install for Cursor only\n    ${cyan}--windsurf${reset}                Install for Windsurf only\n    ${cyan}--augment${reset}                 Install for Augment only\n    ${cyan}--trae${reset}                    Install for Trae only\n    ${cyan}--qwen${reset}                    Install for Qwen Code only\n    ${cyan}--cline${reset}                   Install for Cline only\n    ${cyan}--codebuddy${reset}              Install for CodeBuddy only\n    ${cyan}--qoder${reset}                  Install for Qoder only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx get-shit-done-cc\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx get-shit-done-cc --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx get-shit-done-cc --gemini --global\n\n    ${dim}# Install for Kilo globally${reset}\n    npx get-shit-done-cc --kilo --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx get-shit-done-cc --codex --global\n\n    ${dim}# Install for Copilot globally${reset}\n    npx get-shit-done-cc --copilot --global\n\n    ${dim}# Install for Copilot locally${reset}\n    npx get-shit-done-cc --copilot --local\n\n    ${dim}# Install for Antigravity globally${reset}\n    npx get-shit-done-cc --antigravity --global\n\n    ${dim}# Install for Antigravity locally${reset}\n    npx get-shit-done-cc --antigravity --local\n\n    ${dim}# Install for Cursor globally${reset}\n    npx get-shit-done-cc --cursor --global\n\n    ${dim}# Install for Cursor locally${reset}\n    npx get-shit-done-cc --cursor --local\n\n    ${dim}# Install for Windsurf globally${reset}\n    npx get-shit-done-cc --windsurf --global\n\n    ${dim}# Install for Windsurf locally${reset}\n    npx get-shit-done-cc --windsurf --local\n\n    ${dim}# Install for Augment globally${reset}\n    npx get-shit-done-cc --augment --global\n\n    ${dim}# Install for Augment locally${reset}\n    npx get-shit-done-cc --augment --local\n\n    ${dim}# Install for Trae globally${reset}\n    npx get-shit-done-cc --trae --global\n\n    ${dim}# Install for Trae locally${reset}\n    npx get-shit-done-cc --trae --local\n\n    ${dim}# Install for Cline locally${reset}\n    npx get-shit-done-cc --cline --local\n\n    ${dim}# Install for CodeBuddy globally${reset}\n    npx get-shit-done-cc --codebuddy --global\n\n    ${dim}# Install for CodeBuddy locally${reset}\n    npx get-shit-done-cc --codebuddy --local\n\n    ${dim}# Install for Qoder globally${reset}\n    npx get-shit-done-cc --qoder --global\n\n    ${dim}# Install for Qoder locally${reset}\n    npx get-shit-done-cc --qoder --local\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx get-shit-done-cc --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx get-shit-done-cc --kilo --global --config-dir ~/.kilo-work\n\n    ${dim}# Install to current project only${reset}\n    npx get-shit-done-cc --claude --local\n\n    ${dim}# Uninstall GSD from Cursor globally${reset}\n    npx get-shit-done-cc --cursor --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / OPENCODE_CONFIG_DIR / GEMINI_CONFIG_DIR / KILO_CONFIG_DIR / CODEX_HOME / COPILOT_CONFIG_DIR / ANTIGRAVITY_CONFIG_DIR / CURSOR_CONFIG_DIR / WINDSURF_CONFIG_DIR / AUGMENT_CONFIG_DIR / TRAE_CONFIG_DIR / QWEN_CONFIG_DIR / CLINE_CONFIG_DIR / CODEBUDDY_CONFIG_DIR / QODER_CONFIG_DIR environment variables.\n`);
   process.exit(0);
 }
 
@@ -1607,6 +1622,90 @@ function convertClaudeAgentToClineAgent(content) {
 }
 
 // ── End Cline converters ─────────────────────────────────────────────────────
+
+// -- Qoder converters ---------------------------------------------------------
+
+// Qoder tool name mapping -- Claude Code tools to Qoder tools
+const claudeToQoderTools = {
+  Read: 'read_file',
+  Write: 'create_file',
+  Edit: 'search_replace',
+  Bash: 'run_in_terminal',
+  Glob: 'search_file',
+  Grep: 'grep_code',
+  WebSearch: 'search_web',
+  WebFetch: 'fetch_content',
+  TodoWrite: 'TaskCreate',
+  AskUserQuestion: 'ask_user_question',
+};
+
+function convertQoderToolName(claudeTool) {
+  if (claudeTool.startsWith('mcp__')) {
+    return null;
+  }
+  if (claudeTool === 'Task') {
+    return null;
+  }
+  if (claudeToQoderTools[claudeTool]) {
+    return claudeToQoderTools[claudeTool];
+  }
+  return claudeTool.toLowerCase();
+}
+
+function convertSlashCommandsToQoderSkillMentions(content) {
+  return content.replace(/\/gsd:([a-z0-9-]+)/g, (_, commandName) => {
+    return `/gsd-${commandName}`;
+  });
+}
+
+function convertClaudeToQoderMarkdown(content) {
+  let converted = convertSlashCommandsToQoderSkillMentions(content);
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/`\.\/CLAUDE\.md`/g, '`AGENTS.md`');
+  converted = converted.replace(/\.\/CLAUDE\.md/g, 'AGENTS.md');
+  converted = converted.replace(/`CLAUDE\.md`/g, '`AGENTS.md`');
+  converted = converted.replace(/\bCLAUDE\.md\b/g, 'AGENTS.md');
+  converted = converted.replace(/\.claude\/skills\//g, '.qoder/skills/');
+  converted = converted.replace(/\.\/\.claude\//g, './.qoder/');
+  converted = converted.replace(/\.claude\//g, '.qoder/');
+  converted = converted.replace(/\*\*Known Claude Code bug \(classifyHandoffIfNeeded\):\*\*[^\n]*\n/g, '');
+  converted = converted.replace(/- \*\*classifyHandoffIfNeeded false failure:\*\*[^\n]*\n/g, '');
+  converted = converted.replace(/\bClaude Code\b/g, 'Qoder');
+  return converted;
+}
+
+function convertClaudeCommandToQoderSkill(content, skillName) {
+  const converted = convertClaudeToQoderMarkdown(content);
+  const { frontmatter, body } = extractFrontmatterAndBody(converted);
+  let description = `Run GSD workflow ${skillName}.`;
+  if (frontmatter) {
+    const maybeDescription = extractFrontmatterField(frontmatter, 'description');
+    if (maybeDescription) {
+      description = maybeDescription;
+    }
+  }
+  description = toSingleLine(description);
+  const shortDescription = description.length > 180 ? `${description.slice(0, 177)}...` : description;
+  return `---\nname: ${yamlIdentifier(skillName)}\ndescription: ${shortDescription}\n---\n${body}`;
+}
+
+function convertClaudeAgentToQoderAgent(content) {
+  let converted = convertClaudeToQoderMarkdown(content);
+  const { frontmatter, body } = extractFrontmatterAndBody(converted);
+  if (!frontmatter) return converted;
+  const name = extractFrontmatterField(frontmatter, 'name') || 'unknown';
+  const description = extractFrontmatterField(frontmatter, 'description') || '';
+  const color = extractFrontmatterField(frontmatter, 'color');
+  const toolsRaw = extractFrontmatterField(frontmatter, 'tools') || '';
+  const claudeTools = toolsRaw.split(',').map(t => t.trim()).filter(Boolean);
+  const mappedTools = claudeTools.map(t => convertQoderToolName(t)).filter(Boolean);
+  let fm = `---\nname: ${yamlIdentifier(name)}\ndescription: ${yamlQuote(toSingleLine(description))}\ntools: ${mappedTools.join(', ')}\n`;
+  if (color) fm += `color: ${color}\n`;
+  fm += '---';
+  return `${fm}\n${body}`;
+}
+
+// -- End Qoder converters -----------------------------------------------------
 
 function convertSlashCommandsToCodexSkillMentions(content) {
   // Convert colon-style skill invocations to Codex $ prefix
@@ -3855,6 +3954,69 @@ function copyCommandsAsCodebuddySkills(srcDir, skillsDir, prefix, pathPrefix, ru
 }
 
 /**
+ * Copy Claude commands as Qoder skills -- one folder per skill with SKILL.md.
+ * Qoder uses its own tool names and config directory structure.
+ */
+function copyCommandsAsQoderSkills(srcDir, skillsDir, prefix, pathPrefix, runtime) {
+  if (!fs.existsSync(srcDir)) {
+    return;
+  }
+
+  fs.mkdirSync(skillsDir, { recursive: true });
+
+  const existing = fs.readdirSync(skillsDir, { withFileTypes: true });
+  for (const entry of existing) {
+    if (entry.isDirectory() && entry.name.startsWith(`${prefix}-`)) {
+      fs.rmSync(path.join(skillsDir, entry.name), { recursive: true });
+    }
+  }
+
+  function recurse(currentSrcDir, currentPrefix) {
+    const entries = fs.readdirSync(currentSrcDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const srcPath = path.join(currentSrcDir, entry.name);
+      if (entry.isDirectory()) {
+        recurse(srcPath, `${currentPrefix}-${entry.name}`);
+        continue;
+      }
+
+      if (!entry.name.endsWith('.md')) {
+        continue;
+      }
+
+      const baseName = entry.name.replace('.md', '');
+      const skillName = `${currentPrefix}-${baseName}`;
+      const skillDir = path.join(skillsDir, skillName);
+      fs.mkdirSync(skillDir, { recursive: true });
+
+      let content = fs.readFileSync(srcPath, 'utf8');
+      const globalClaudeRegex = /~\/\.claude\//g;
+      const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
+      const localClaudeRegex = /\.\/\.claude\//g;
+      const bareGlobalClaudeRegex = /~\/\.claude\b/g;
+      const bareGlobalClaudeHomeRegex = /\$HOME\/\.claude\b/g;
+      const bareLocalClaudeRegex = /\.\/\.claude\b/g;
+      const qoderDirRegex = /~\/\.qoder\//g;
+      const normalizedPathPrefix = pathPrefix.replace(/\/$/, '');
+      content = content.replace(globalClaudeRegex, pathPrefix);
+      content = content.replace(globalClaudeHomeRegex, pathPrefix);
+      content = content.replace(localClaudeRegex, `./${getDirName(runtime)}/`);
+      content = content.replace(bareGlobalClaudeRegex, normalizedPathPrefix);
+      content = content.replace(bareGlobalClaudeHomeRegex, normalizedPathPrefix);
+      content = content.replace(bareLocalClaudeRegex, `./${getDirName(runtime)}`);
+      content = content.replace(qoderDirRegex, pathPrefix);
+      content = processAttribution(content, getCommitAttribution(runtime));
+      content = convertClaudeCommandToQoderSkill(content, skillName);
+
+      fs.writeFileSync(path.join(skillDir, 'SKILL.md'), content);
+    }
+  }
+
+  recurse(srcDir, prefix);
+}
+
+/**
  * Copy Claude commands as Copilot skills — one folder per skill with SKILL.md.
  * Applies CONV-01 (structure), CONV-02 (allowed-tools), CONV-06 (paths), CONV-07 (command names).
  */
@@ -4082,6 +4244,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
   const isTrae = runtime === 'trae';
   const isQwen = runtime === 'qwen';
   const isCline = runtime === 'cline';
+  const isQoder = runtime === 'qoder';
   const dirName = getDirName(runtime);
 
   // Clean install: remove existing destination to prevent orphaned files
@@ -4102,7 +4265,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       // Replace ~/.claude/ and $HOME/.claude/ and ./.claude/ with runtime-appropriate paths
       // Skip generic replacement for Copilot — convertClaudeToCopilotContent handles all paths
       let content = fs.readFileSync(srcPath, 'utf8');
-      if (!isCopilot && !isAntigravity) {
+      if (!isCopilot && !isAntigravity && !isQoder) {
         const globalClaudeRegex = /~\/\.claude\//g;
         const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
         const localClaudeRegex = /\.\/\.claude\//g;
@@ -4155,6 +4318,10 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       } else if (isCline) {
         content = convertClaudeToCliineMarkdown(content);
         fs.writeFileSync(destPath, content);
+      } else if (isQoder) {
+        content = convertClaudeToQoderMarkdown(content);
+        content = processAttribution(content, getCommitAttribution(runtime));
+        fs.writeFileSync(destPath, content);
       } else if (isQwen) {
         content = content.replace(/CLAUDE\.md/g, 'QWEN.md');
         content = content.replace(/\bClaude Code\b/g, 'Qwen Code');
@@ -4203,6 +4370,10 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       jsContent = jsContent.replace(/\.claude\/skills\//g, '.cline/skills/');
       jsContent = jsContent.replace(/CLAUDE\.md/g, '.clinerules');
       jsContent = jsContent.replace(/\bClaude Code\b/g, 'Cline');
+      fs.writeFileSync(destPath, jsContent);
+    } else if (isQoder && (entry.name.endsWith('.cjs') || entry.name.endsWith('.js'))) {
+      let jsContent = fs.readFileSync(srcPath, 'utf8');
+      jsContent = convertClaudeToQoderMarkdown(jsContent);
       fs.writeFileSync(destPath, jsContent);
     } else if (isQwen && (entry.name.endsWith('.cjs') || entry.name.endsWith('.js'))) {
       let jsContent = fs.readFileSync(srcPath, 'utf8');
@@ -4390,6 +4561,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   const isTrae = runtime === 'trae';
   const isQwen = runtime === 'qwen';
   const isCodebuddy = runtime === 'codebuddy';
+  const isQoder = runtime === 'qoder';
   const dirName = getDirName(runtime);
 
   // Get the target directory based on runtime and install type
@@ -4440,7 +4612,7 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
       console.log(`  ${green}✓${reset} Removed GSD commands from command/`);
     }
-  } else if (isCodex || isCursor || isWindsurf || isTrae || isCodebuddy) {
+  } else if (isCodex || isCursor || isWindsurf || isTrae || isCodebuddy || isQoder) {
     // Codex/Cursor/Windsurf/Trae/CodeBuddy: remove skills/gsd-*/SKILL.md skill directories
     const skillsDir = path.join(targetDir, 'skills');
     if (fs.existsSync(skillsDir)) {
@@ -5194,6 +5366,7 @@ function writeManifest(configDir, runtime = 'claude') {
   const isWindsurf = runtime === 'windsurf';
   const isTrae = runtime === 'trae';
   const isCline = runtime === 'cline';
+  const isQoder = runtime === 'qoder';
   const gsdDir = path.join(configDir, 'get-shit-done');
   const commandsDir = path.join(configDir, 'commands', 'gsd');
   const opencodeCommandDir = path.join(configDir, 'command');
@@ -5367,6 +5540,7 @@ function install(isGlobal, runtime = 'claude') {
   const isQwen = runtime === 'qwen';
   const isCodebuddy = runtime === 'codebuddy';
   const isCline = runtime === 'cline';
+  const isQoder = runtime === 'qoder';
   const dirName = getDirName(runtime);
   const src = path.join(__dirname, '..');
 
@@ -5408,6 +5582,7 @@ function install(isGlobal, runtime = 'claude') {
   if (isQwen) runtimeLabel = 'Qwen Code';
   if (isCodebuddy) runtimeLabel = 'CodeBuddy';
   if (isCline) runtimeLabel = 'Cline';
+  if (isQoder) runtimeLabel = 'Qoder';
 
   console.log(`  Installing for ${cyan}${runtimeLabel}${reset} to ${cyan}${locationLabel}${reset}\n`);
 
@@ -5548,6 +5723,16 @@ function install(isGlobal, runtime = 'claude') {
     } else {
       failures.push('skills/gsd-*');
     }
+  } else if (isQoder) {
+    const skillsDir = path.join(targetDir, 'skills');
+    const gsdSrc = path.join(src, 'commands', 'gsd');
+    copyCommandsAsQoderSkills(gsdSrc, skillsDir, 'gsd', pathPrefix, runtime);
+    const installedSkillNames = listCodexSkillNames(skillsDir);
+    if (installedSkillNames.length > 0) {
+      console.log(`  ${green}✓${reset} Installed ${installedSkillNames.length} skills to skills/`);
+    } else {
+      failures.push('skills/gsd-*');
+    }
   } else if (isCline) {
     // Cline is rules-based — commands are embedded in .clinerules (generated below).
     // No skills/commands directory needed. Engine is installed via copyWithPathReplacement.
@@ -5657,7 +5842,7 @@ function install(isGlobal, runtime = 'claude') {
         const bareDirRegex = /~\/\.claude\b/g;
         const bareHomeDirRegex = /\$HOME\/\.claude\b/g;
         const normalizedPathPrefix = pathPrefix.replace(/\/$/, '');
-        if (!isCopilot && !isAntigravity) {
+        if (!isCopilot && !isAntigravity && !isQoder) {
           content = content.replace(dirRegex, pathPrefix);
           content = content.replace(homeDirRegex, pathPrefix);
           content = content.replace(bareDirRegex, normalizedPathPrefix);
@@ -6269,6 +6454,7 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   const isWindsurf = runtime === 'windsurf';
   const isTrae = runtime === 'trae';
   const isCline = runtime === 'cline';
+  const isQoder = runtime === 'qoder';
 
   if (shouldInstallStatusline && !isOpencode && !isKilo && !isCodex && !isCopilot && !isCursor && !isWindsurf && !isTrae) {
     settings.statusLine = {
@@ -6327,6 +6513,7 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   if (runtime === 'trae') program = 'Trae';
   if (runtime === 'cline') program = 'Cline';
   if (runtime === 'qwen') program = 'Qwen Code';
+  if (runtime === 'qoder') program = 'Qoder';
 
   let command = '/gsd-new-project';
   if (runtime === 'opencode') command = '/gsd-new-project';
@@ -6340,6 +6527,7 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   if (runtime === 'trae') command = '/gsd-new-project';
   if (runtime === 'cline') command = '/gsd-new-project';
   if (runtime === 'qwen') command = '/gsd-new-project';
+  if (runtime === 'qoder') command = '/gsd-new-project';
   console.log(`
   ${green}Done!${reset} Open a blank directory in ${program} and run ${cyan}${command}${reset}.
 
@@ -6431,9 +6619,10 @@ function promptRuntime(callback) {
     '11': 'opencode',
     '12': 'qwen',
     '13': 'trae',
-    '14': 'windsurf'
+    '14': 'windsurf',
+    '15': 'qoder'
   };
-  const allRuntimes = ['claude', 'antigravity', 'augment', 'cline', 'codebuddy', 'codex', 'copilot', 'cursor', 'gemini', 'kilo', 'opencode', 'qwen', 'trae', 'windsurf'];
+  const allRuntimes = ['claude', 'antigravity', 'augment', 'cline', 'codebuddy', 'codex', 'copilot', 'cursor', 'gemini', 'kilo', 'opencode', 'qoder', 'qwen', 'trae', 'windsurf'];
 
   console.log(`  ${yellow}Which runtime(s) would you like to install for?${reset}\n\n  ${cyan}1${reset}) Claude Code  ${dim}(~/.claude)${reset}
   ${cyan}2${reset}) Antigravity  ${dim}(~/.gemini/antigravity)${reset}
@@ -6449,7 +6638,8 @@ function promptRuntime(callback) {
   ${cyan}12${reset}) Qwen Code    ${dim}(~/.qwen)${reset}
   ${cyan}13${reset}) Trae         ${dim}(~/.trae)${reset}
   ${cyan}14${reset}) Windsurf     ${dim}(~/.codeium/windsurf)${reset}
-  ${cyan}15${reset}) All
+  ${cyan}15${reset}) Qoder        ${dim}(~/.qoder)${reset}
+  ${cyan}16${reset}) All
 
   ${dim}Select multiple: 1,2,6 or 1 2 6${reset}
 `);
@@ -6460,7 +6650,7 @@ function promptRuntime(callback) {
     const input = answer.trim() || '1';
 
     // "All" shortcut
-    if (input === '15') {
+    if (input === '16') {
       callback(allRuntimes);
       return;
     }
@@ -6627,6 +6817,10 @@ if (process.env.GSD_TEST_MODE) {
     copyCommandsAsCodebuddySkills,
     convertClaudeToCliineMarkdown,
     convertClaudeAgentToClineAgent,
+    convertClaudeToQoderMarkdown,
+    convertClaudeCommandToQoderSkill,
+    convertClaudeAgentToQoderAgent,
+    copyCommandsAsQoderSkills,
     writeManifest,
     reportLocalPatches,
     validateHookFields,
