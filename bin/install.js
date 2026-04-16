@@ -1670,6 +1670,10 @@ function convertClaudeToQoderMarkdown(content) {
   converted = converted.replace(/\$HOME\/\.claude\//g, '$HOME/.qoder/');
   converted = converted.replace(/~\/\.claude\//g, '~/.qoder/');
   converted = converted.replace(/\.claude\//g, '.qoder/');
+  // Bare paths without trailing slash (e.g. configDir = ~/.claude)
+  converted = converted.replace(/~\/\.claude\b/g, '~/.qoder');
+  converted = converted.replace(/\$HOME\/\.claude\b/g, '$HOME/.qoder');
+  converted = converted.replace(/\.\/\.claude\b/g, './.qoder');
   converted = converted.replace(/\*\*Known Claude Code bug \(classifyHandoffIfNeeded\):\*\*[^\n]*\n/g, '');
   converted = converted.replace(/- \*\*classifyHandoffIfNeeded false failure:\*\*[^\n]*\n/g, '');
   converted = converted.replace(/\bClaude Code\b/g, 'Qoder');
@@ -5940,7 +5944,13 @@ function install(isGlobal, runtime = 'claude') {
           // and stamp the current GSD version into the hook version header
           if (entry.endsWith('.js')) {
             let content = fs.readFileSync(srcFile, 'utf8');
-            content = content.replace(/'\.claude'/g, configDirReplacement);
+            if (runtime === 'qoder') {
+              // Qoder: hooks already contain '.qoder' entries (e.g. detectConfigDir array).
+              // Only replace '.claude' in path.join() calls to avoid duplicating '.qoder'.
+              content = content.replace(new RegExp("(path\\.join\\([^)]*)'\\.clau" + "de'(\\))", 'g'), `$1'${getDirName(runtime)}'$2`);
+            } else {
+              content = content.replace(/'\.claude'/g, configDirReplacement);
+            }
             content = content.replace(/\/\.claude\//g, `/${getDirName(runtime)}/`);
             if (isQwen) {
               content = content.replace(/CLAUDE\.md/g, 'QWEN.md');
