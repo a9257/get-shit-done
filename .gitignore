@@ -7,6 +7,7 @@ commands.html
 
 # Local test installs
 .claude/
+.qoder/
 
 # Cursor IDE — local agents/skills bundle (never commit)
 .cursor/
